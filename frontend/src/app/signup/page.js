@@ -1,0 +1,236 @@
+"use client";
+
+import React, {useState} from "react";
+import {
+  TextField,
+  Button,
+  Typography,
+  Container,
+  Box,
+  Grid,
+  Avatar,
+  CssBaseline,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { useRouter } from "next/navigation"; // Import useRouter
+
+const SignUpPage = () => {
+  const router = useRouter(); 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    age: "",
+    ethnicity: "",
+    gender: "",
+    education: "",
+    employment: "",
+  });
+
+   // Handle changes in input fields
+   const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Function to handle navigation to the login page
+  const handleLoginRedirect = () => {
+    router.push("/login"); // Navigate to the login page
+  };
+
+  return (
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <Box
+        sx={{
+          marginTop: 8,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Sign Up
+        </Typography>
+        <Box component="form" noValidate sx={{ mt: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                autoComplete="name"
+                name="name"
+                required
+                fullWidth
+                id="name"
+                label="Name"
+                autoFocus
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Demographic survey (Optional)
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="age"
+                label="Age (Optional)"
+                type="number"
+                value={formData.age}
+                onChange={handleChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="ethnicity-label">Ethnicity (Optional)</InputLabel>
+                <Select
+                  labelId="ethnicity-label"
+                  name="ethnicity"
+                  label="Ethnicity (Optional)"
+                  value={formData.ethnicity}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="asian">Asian</MenuItem>
+                  <MenuItem value="black">Black or African American</MenuItem>
+                  <MenuItem value="hispanic">Hispanic or Latino</MenuItem>
+                  <MenuItem value="white">White</MenuItem>
+                  <MenuItem value="native-american">Native American</MenuItem>
+                  <MenuItem value="pacific-islander">Pacific Islander</MenuItem>
+                  <MenuItem value="middle-eastern">Middle Eastern</MenuItem>
+                  <MenuItem value="south-asian">South Asian</MenuItem>
+                  <MenuItem value="east-asian">East Asian</MenuItem>
+                  <MenuItem value="southeast-asian">Southeast Asian</MenuItem>
+                  <MenuItem value="latino">Latino</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="gender-label">Gender (Optional)</InputLabel>
+                <Select
+                  labelId="gender-label"
+                  name="gender"
+                  label="Gender (Optional)"
+                  value={formData.gender}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="non-binary">Non-binary</MenuItem>
+                  <MenuItem value="prefer-not-to-say">
+                    Prefer not to say
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="education-label">Education (Optional)</InputLabel>
+                <Select
+                  labelId="education-label"
+                  name="education"
+                  label="Education (Optional)"
+                  value={formData.education}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="high-school">High School</MenuItem>
+                  <MenuItem value="bachelor">Bachelor's Degree</MenuItem>
+                  <MenuItem value="master">Master's Degree</MenuItem>
+                  <MenuItem value="phd">PhD</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="employment-label">Employment (Optional)</InputLabel>
+                <Select
+                  labelId="employment-label"
+                  name="employment"
+                  label="Employment (Optional)"
+                  value={formData.employment}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="employed">Employed</MenuItem>
+                  <MenuItem value="student">Student</MenuItem>
+                  <MenuItem value="unemployed">Unemployed</MenuItem>
+                  <MenuItem value="self-employed">Self-employed</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Sign Up
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                sx={{ mt: 2 }}
+                onClick={handleLoginRedirect}
+              >
+                Already Signed Up? Log In instead
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
+    </Container>
+  );
+};
+
+export default SignUpPage;
