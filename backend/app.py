@@ -34,6 +34,7 @@ def signup():
     db.users.insert_one(user)
     return jsonify({"message": "User registered successfully!"}), 201
 
+# TODO: User_id to be used in login front-end
 # API endpoint to log in a user
 @app.route('/login', methods=['POST'])
 def login_user():
