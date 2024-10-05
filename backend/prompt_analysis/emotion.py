@@ -16,4 +16,4 @@ def identify_emotions(msg: str):
 
     return emotions_dict
 
-print(identify_emotions('I ate chocolate cake and it was delicious'))
+#print(identify_emotions('I ate chocolate cake and it was delicious'))
