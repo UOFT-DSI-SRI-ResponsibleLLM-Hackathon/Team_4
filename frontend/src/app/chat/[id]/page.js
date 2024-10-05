@@ -8,6 +8,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Bar from '../bar';
 import UserInput from '../userInput';
 import AIOutput from '../aiOutput';
+import axios from 'axios'; // Import axios for making API requests
 
 export default function ChatPage() {
   const { id } = useParams(); // Get the dynamic id from the route
@@ -19,17 +20,30 @@ export default function ChatPage() {
     setInput(userInput);
   };
 
-  const handleInput = (event) => {
+  const handleInput = async (event) => {
     event.preventDefault();
 
     if (!input.trim()) return;
 
     const userMessage = { text: input, type: 'user' };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    const aiResponse = `AI: ${input}`; // Replace this with actual AI response logic
-    const aiMessage = { text: aiResponse, type: 'ai' };
+    try {
+      // Make a POST request to the Flask backend
+      const response = await axios.post('http://localhost:5000/chat', {
+        prompt: input,
+      });
 
-    setMessages((prevMessages) => [...prevMessages, userMessage, aiMessage]);
+      const aiResponse = response.data.output; // Assuming your backend returns an output field
+      console.log(aiResponse);
+      const aiMessage = { text: aiResponse, type: 'ai' };
+
+      setMessages((prevMessages) => [...prevMessages, aiMessage]);
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      const errorMessage = { text: "Error fetching response from AI.", type: 'ai' };
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+    }
 
     setInput('');
   };
