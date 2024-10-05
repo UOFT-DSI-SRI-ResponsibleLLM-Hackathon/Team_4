@@ -7,12 +7,13 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button'; // Import Material UI Button
 import Modal from '@mui/material/Modal'; // Import Material UI Modal
-import Rating from '@mui/material/Rating'; // Import Material UI Rating
 import { Typography } from '@mui/material';
 import Bar from '../bar';
 import UserInput from '../userInput';
 import AIOutput from '../aiOutput';
 import axios from 'axios'; // Import axios for making API requests
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 export default function ChatPage() {
   const { id } = useParams(); // Get the dynamic id from the route
@@ -20,6 +21,18 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [openModal, setOpenModal] = useState(false); // State for modal open/close
   const [rating, setRating] = useState(0); // State for storing the rating
+
+  const handleRatingSubmit = async (newValue) => {
+    try {
+      await axios.post('http://localhost:5000/rate', {
+        user_id: id,
+        rating: newValue,
+      });
+      console.log("Rating saved successfully!");
+    } catch (error) {
+      console.error("Error saving rating:", error);
+    }
+  };
 
   const handleType = (event) => {
     const userInput = event.target.value;
@@ -58,12 +71,6 @@ export default function ChatPage() {
   // Open the rating modal
   const handleEndConversation = () => {
     setMessages([]);
-    setOpenModal(true);
-  };
-
-  // Close the rating modal
-  const handleCloseModal = () => {
-    setOpenModal(false);
   };
 
   return (
@@ -73,9 +80,24 @@ export default function ChatPage() {
         {messages.map((message, index) => (
           <Box key={index} sx={{ margin: '8px 0' }}>
             {message.type === 'user' ? (
-              <UserInput message={message} />
+              <Stack spacing={1}>
+                <UserInput message={message} />
+              </Stack>
             ) : (
-              <AIOutput message={message} />
+              <Stack spacing={1}>
+                <AIOutput message={message} />
+                {/* Align the Rating component to the right */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Rating 
+                  name="size-medium" 
+                  defaultValue={0}
+                  onChange={(event, newValue) => {
+                    setRating(newValue); 
+                    handleRatingSubmit(newValue); 
+                  }} 
+                  />
+                </Box>
+              </Stack>
             )}
           </Box>
         ))}
@@ -120,62 +142,6 @@ export default function ChatPage() {
           End Conversation
         </Button>
       </Box>
-
-      {/* Modal for Rating the Conversation */}
-      <Modal
-    open={openModal}
-    onClose={handleCloseModal}
->
-    <Box
-        sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-            display: 'flex', // Use flexbox for layout
-            flexDirection: 'column', // Stack children vertically
-            justifyContent: 'space-between', // Space between items
-            height: '200px', // Set a height for the modal
-        }}
-    >
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-            We appreciate your feedback.
-        </Typography>
-        
-        {/* Centered Box for Rating */}
-        <Box 
-            sx={{
-                display: 'flex', // Use flexbox for centering
-                justifyContent: 'center', // Center horizontally
-                marginY: 2, // Add vertical margin for spacing
-            }}
-        >
-            <Rating
-                name="conversation-rating"
-                value={rating}
-                onChange={(event, newValue) => {
-                    setRating(newValue);
-                }}
-            />
-        </Box>
-
-        {/* Empty Box to take up space and push button to bottom */}
-        <Box sx={{ flexGrow: 1 }} />
-        <Button
-            onClick={handleCloseModal}
-            sx={{ mt: 2, alignSelf: 'flex-end' }} // Align button to the right
-            variant="outlined"
-        >
-            Submit
-        </Button>
-    </Box>
-</Modal>
-
     </Box>
   );
 }

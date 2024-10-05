@@ -67,20 +67,10 @@ def login_user():
 def chat():
     data = request.json
     system_prompts = ["Respond to the following scenario with purely factual information", "Respond to the following scenario with an even mix of emotion and logic", "Respond to the following scenario with primarily factual information while briefly acknowleding the emotional aspect of the situation", "Respond to the following scenario empathetically but provide brief logical reasoning", "Respond to the following scenario with empathy and emotional support, focusing solely on the feelings"]
-    # system_prompt = system_prompts[random.randint(0,4)]
-    # print(system_prompt)
-
     user_prompt = data.get('prompt')
     user_id = data.get('user_id')
-    print(user_prompt)
-    print(user_id)
 
     user = db["users"].find_one({"_id": ObjectId(user_id)})
-
-
-    print('user')
-    print(user)
-    print(user_id)
 
     age, gender, ethnicity, education, employment = user['demographics']['age'], user['demographics']['gender'], user['demographics']['ethnicity'], user['demographics']['education'], user['demographics']['employment']
     
@@ -94,9 +84,14 @@ def chat():
     
     ratios = [0.01, 0.5, 0.25, 0.75, 1.0]
 
+    chat = {'user_id': user_id}
+
     # analyze the message to find other paramaters
     emotions = emotion.identify_emotions(user_prompt)
+    chat['emotions'] = emotions
+
     categories = category.categorize(user_prompt, global_categories)
+    chat['categories'] = categories
     
     # TODO: the best ratio, changing variable
     # Load the trained model and the scaler
@@ -121,6 +116,8 @@ def chat():
 
     system_prompt = system_prompts[best_ratio_index]
 
+    chat['system prompt'] = system_prompt
+    chat['ratio'] = ratios[best_ratio_index]
 
     if not user_prompt:
         return jsonify({"error": "No prompt provided"}), 400
@@ -138,23 +135,37 @@ def chat():
 
         response = completion.choices[0].message.content
         print(response)
+        db.chats.insert_one(chat)
         return jsonify({"output": response})
 
     except Exception as e:
         print("Error in OpenAI API call:", e)
         return jsonify({"error": "Error fetching AI response"}), 500
-    
-@app.route('/log_chat', methods=['POST'])
-def log_chat():
-    chat_data = request.json
-    chat_entry = {
-        "user_id": chat_data['user_id'],  # Reference to the user's ID
-        "feedback": chat_data['feedback'],
-        "sentiment": chat_data['sentiment'],
-        "topic": chat_data['topic'],
-    }
-    db.chats.insert_one(chat_entry)
-    return jsonify({"message": "Chat data logged successfully!"}), 201
+
+@app.route('/rate', methods=['POST'])
+def rate_chat():
+    data = request.json
+    user_id = data.get('user_id')
+    rating = data.get('rating')
+
+    db.chats.update_one(
+        {'user_id': user_id},
+        {'$push': {'ratings': rating}} 
+    )
+
+    return jsonify({"message": "Rating saved successfully!"}), 200
+# @app.route('/log_feedback', methods=['POST'])
+# def log_chat():
+#     chat_data = request.json
+
+#     chat_entry = {
+#         "user_id": chat_data['user_id'],  # Reference to the user's ID
+#         "feedback": chat_data['feedback'],
+#         "sentiment": chat_data['sentiment'],
+#         "topic": chat_data['topic'],
+#     }
+#     db.chats.insert_one(chat_entry)
+#     return jsonify({"message": "Chat data logged successfully!"}), 201
 
 # @app.route('/analyze_message', methods=['POST'])
 # def analyze_message():
