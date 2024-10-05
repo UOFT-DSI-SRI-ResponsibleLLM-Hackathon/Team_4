@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from flask_cors import CORS
+from prompt_analysis import emotion, category
+from neural_net import get_result
+import joblib
+import data_processing
 from openai import OpenAI
 import random
 
@@ -99,6 +103,62 @@ def chat():
 #     }
 #     db.chats.insert_one(chat_entry)
 #     return jsonify({"message": "Chat data logged successfully!"}), 201
+
+@app.route('/analyze_message', methods=['POST'])
+def analyze_message():
+    # assume request is a JSON dict with user_id and message
+    data = request.json
+    user_id = data['username']
+    message = data['message']
+
+    # for end of the session when we have feedback
+    table_entry = {}
+
+    # query the database collection called users to find user demographics
+    user = db["users"].find_one({"username": user_id})
+
+    age, gender, ethnicity, education, employment = user['age'], user['gender'], user['ethnicity'], user['education'], user['employment']
+
+    demographics = {
+            "age": age,
+            "gender": gender,
+            "ethnicity": ethnicity,
+            "education": education,
+            "employment": employment
+        }
+
+
+    ratios = [0.25, 0.5, 0.75]
+
+    # analyze the message to find other paramaters
+    emotions = emotion.identify_emotions(message)
+    categories = category.categorize(message)
+    
+    # TODO: the best ratio, changing variable
+    # Load the trained model and the scaler
+    model_path = 'backend/neural_net/model/feedback_nn_model.pth'
+    input_size = 59  # Set the input size to 58 based on the trained model's input
+
+    model = get_result.load_model(model_path, input_size)
+
+    scaler_path = 'backend/neural_net/model/scaler.pkl'  # Load the saved scaler
+
+    scaler = joblib.load(scaler_path)
+
+    best_feedback, best_ratio = 0, 0
+
+    for ratio in ratios:
+        data = data_processing.process_data(categories, demographics, emotions, ratio)
+        predicted_feedback = get_result(model, scaler, data)
+        if predicted_feedback > best_feedback:
+            best_feedback, best_ratio = predicted_feedback, ratio
+
+    # call the LLM with a prompt incorporating the best ratio
+    ...
+
+    # TODO: return the jsonified LLM response
+    
+    
 
 # try:
 #     client.admin.command('ping')
