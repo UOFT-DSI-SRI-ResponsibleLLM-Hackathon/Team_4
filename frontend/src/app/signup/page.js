@@ -58,7 +58,9 @@ const SignUpPage = () => {
 
       // Assuming your Flask backend returns a message in the response
       console.log(response.data.message);
-      router.push("/chat"); // Redirect after successful signup
+      const user_id = response.data.user_id;
+      console.log(user_id);
+      router.push(`/chat/${user_id}`); // Redirect after successful signup
     } catch (error) {
       console.error("Error during signup:", error.response?.data.message || error.message);
     }
@@ -124,7 +126,7 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
-                Demographic survey
+                Demographic survey:
               </Typography>
             </Grid>
 

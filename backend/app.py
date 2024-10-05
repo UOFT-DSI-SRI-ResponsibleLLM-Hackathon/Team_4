@@ -26,13 +26,15 @@ def signup():
         "demographics": {
             "age": user_data['age'],
             "gender": user_data['gender'],
-            "ethnicity": user_data['location'],
+            "ethnicity": user_data['ethnicity'],
             "education": user_data['education'],
             "employment": user_data['employment']
         }
     }
-    db.users.insert_one(user)
-    return jsonify({"message": "User registered successfully!"}), 201
+    result = db.users.insert_one(user)
+    user_id = str(result.inserted_id)  # Convert ObjectId to string
+    print(user_id)
+    return jsonify({"message": "User registered successfully!", "user_id": user_id}), 201
 
 # TODO: User_id to be used in login front-end
 # API endpoint to log in a user
@@ -52,12 +54,9 @@ def log_chat():
     chat_data = request.json
     chat_entry = {
         "user_id": chat_data['user_id'],  # Reference to the user's ID
-        "prompt": chat_data['prompt'],
-        "response": chat_data['response'],
         "feedback": chat_data['feedback'],
         "sentiment": chat_data['sentiment'],
         "topic": chat_data['topic'],
-        "timestamp": chat_data.get('timestamp', None)  # Optional timestamp
     }
     db.chats.insert_one(chat_entry)
     return jsonify({"message": "Chat data logged successfully!"}), 201
@@ -69,4 +68,4 @@ def log_chat():
 #     print(e)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
