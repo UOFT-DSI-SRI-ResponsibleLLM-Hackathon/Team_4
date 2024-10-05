@@ -144,18 +144,17 @@ def chat():
         print("Error in OpenAI API call:", e)
         return jsonify({"error": "Error fetching AI response"}), 500
     
-# # TODO: Change this according to implementation
-# @app.route('/log_chat', methods=['POST'])
-# def log_chat():
-#     chat_data = request.json
-#     chat_entry = {
-#         "user_id": chat_data['user_id'],  # Reference to the user's ID
-#         "feedback": chat_data['feedback'],
-#         "sentiment": chat_data['sentiment'],
-#         "topic": chat_data['topic'],
-#     }
-#     db.chats.insert_one(chat_entry)
-#     return jsonify({"message": "Chat data logged successfully!"}), 201
+@app.route('/log_chat', methods=['POST'])
+def log_chat():
+    chat_data = request.json
+    chat_entry = {
+        "user_id": chat_data['user_id'],  # Reference to the user's ID
+        "feedback": chat_data['feedback'],
+        "sentiment": chat_data['sentiment'],
+        "topic": chat_data['topic'],
+    }
+    db.chats.insert_one(chat_entry)
+    return jsonify({"message": "Chat data logged successfully!"}), 201
 
 # @app.route('/analyze_message', methods=['POST'])
 # def analyze_message():

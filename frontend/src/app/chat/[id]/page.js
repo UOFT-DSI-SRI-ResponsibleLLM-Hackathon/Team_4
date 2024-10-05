@@ -5,6 +5,10 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InputAdornment from '@mui/material/InputAdornment';
+import Button from '@mui/material/Button'; // Import Material UI Button
+import Modal from '@mui/material/Modal'; // Import Material UI Modal
+import Rating from '@mui/material/Rating'; // Import Material UI Rating
+import { Typography } from '@mui/material';
 import Bar from '../bar';
 import UserInput from '../userInput';
 import AIOutput from '../aiOutput';
@@ -14,6 +18,8 @@ export default function ChatPage() {
   const { id } = useParams(); // Get the dynamic id from the route
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [openModal, setOpenModal] = useState(false); // State for modal open/close
+  const [rating, setRating] = useState(0); // State for storing the rating
 
   const handleType = (event) => {
     const userInput = event.target.value;
@@ -49,6 +55,17 @@ export default function ChatPage() {
     setInput('');
   };
 
+  // Open the rating modal
+  const handleEndConversation = () => {
+    setMessages([]);
+    setOpenModal(true);
+  };
+
+  // Close the rating modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Bar />
@@ -63,6 +80,8 @@ export default function ChatPage() {
           </Box>
         ))}
       </Box>
+
+      {/* Conversation Input and End Conversation Button */}
       <Box
         component="form"
         noValidate
@@ -71,14 +90,15 @@ export default function ChatPage() {
         sx={{
           display: 'flex',
           justifyContent: 'center',
+          alignItems: 'center',
           padding: 2,
         }}
       >
         <TextField
           id="outlined-basic"
-          label={`Message Chat`}
+          label="Message Chat"
           variant="outlined"
-          sx={{ width: '50%' }}
+          sx={{ width: '40%', marginRight: 2 }}
           value={input}
           onChange={handleType}
           InputProps={{
@@ -92,7 +112,70 @@ export default function ChatPage() {
             ),
           }}
         />
+        <Button
+          variant="outlined"
+          onClick={handleEndConversation}
+          sx={{ height: '56px' }} // Align with the height of the text field
+        >
+          End Conversation
+        </Button>
       </Box>
+
+      {/* Modal for Rating the Conversation */}
+      <Modal
+    open={openModal}
+    onClose={handleCloseModal}
+>
+    <Box
+        sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            display: 'flex', // Use flexbox for layout
+            flexDirection: 'column', // Stack children vertically
+            justifyContent: 'space-between', // Space between items
+            height: '200px', // Set a height for the modal
+        }}
+    >
+        <Typography id="modal-modal-title" variant="h6" component="h2">
+            We appreciate your feedback.
+        </Typography>
+        
+        {/* Centered Box for Rating */}
+        <Box 
+            sx={{
+                display: 'flex', // Use flexbox for centering
+                justifyContent: 'center', // Center horizontally
+                marginY: 2, // Add vertical margin for spacing
+            }}
+        >
+            <Rating
+                name="conversation-rating"
+                value={rating}
+                onChange={(event, newValue) => {
+                    setRating(newValue);
+                }}
+            />
+        </Box>
+
+        {/* Empty Box to take up space and push button to bottom */}
+        <Box sx={{ flexGrow: 1 }} />
+        <Button
+            onClick={handleCloseModal}
+            sx={{ mt: 2, alignSelf: 'flex-end' }} // Align button to the right
+            variant="outlined"
+        >
+            Submit
+        </Button>
+    </Box>
+</Modal>
+
     </Box>
   );
 }
