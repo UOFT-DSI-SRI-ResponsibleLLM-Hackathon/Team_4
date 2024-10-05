@@ -15,5 +15,5 @@ def categorize(msg: str, categories: list[str]):
 
     return result
     
-print(categorize("I am stressed about applying to jobs and interviewing", categories))
+#print(categorize("I am stressed about applying to jobs and interviewing", categories))
 

@@ -32,6 +32,7 @@ export default function ChatPage() {
       // Make a POST request to the Flask backend
       const response = await axios.post('http://localhost:5000/chat', {
         prompt: input,
+        user_id: id
       });
 
       const aiResponse = response.data.output; // Assuming your backend returns an output field

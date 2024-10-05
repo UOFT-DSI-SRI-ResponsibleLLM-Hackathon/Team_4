@@ -7,7 +7,9 @@ from neural_net import get_result
 import joblib
 import data_processing
 from openai import OpenAI
-import random
+from bson.objectid import ObjectId
+import os
+
 
 base_url = "https://api.aimlapi.com/v1"
 api_key = "59324168641e4660879344cf8d23d6f4"
@@ -20,6 +22,8 @@ CORS(app)
 url = "mongodb+srv://ainamerchant10:aSyCBGn0EtvfQUp3@llmcluster.kgbtd.mongodb.net/?retryWrites=true&w=majority&appName=LLMCluster"
 client = MongoClient(url, server_api=ServerApi('1'))
 db = client['LLMCluster']
+
+global_categories = ["exams", "family", "friends", "internship", "sleep", "trauma", "relationships"]
 
 # Create collections if they don't exist
 if 'users' not in db.list_collection_names():
@@ -63,11 +67,60 @@ def login_user():
 def chat():
     data = request.json
     system_prompts = ["Respond to the following scenario with purely factual information", "Respond to the following scenario with an even mix of emotion and logic", "Respond to the following scenario with primarily factual information while briefly acknowleding the emotional aspect of the situation", "Respond to the following scenario empathetically but provide brief logical reasoning", "Respond to the following scenario with empathy and emotional support, focusing solely on the feelings"]
-    system_prompt = system_prompts[random.randint(0,4)]
-    print(system_prompt)
+    # system_prompt = system_prompts[random.randint(0,4)]
+    # print(system_prompt)
 
     user_prompt = data.get('prompt')
+    user_id = data.get('user_id')
     print(user_prompt)
+    print(user_id)
+
+    user = db["users"].find_one({"_id": ObjectId(user_id)})
+
+
+    print('user')
+    print(user)
+    print(user_id)
+
+    age, gender, ethnicity, education, employment = user['demographics']['age'], user['demographics']['gender'], user['demographics']['ethnicity'], user['demographics']['education'], user['demographics']['employment']
+    
+    demographics = {
+            "age": age,
+            "gender": gender,
+            "ethnicity": ethnicity,
+            "education": education,
+            "employment": employment
+        }
+    
+    ratios = [0.01, 0.5, 0.25, 0.75, 1.0]
+
+    # analyze the message to find other paramaters
+    emotions = emotion.identify_emotions(user_prompt)
+    categories = category.categorize(user_prompt, global_categories)
+    
+    # TODO: the best ratio, changing variable
+    # Load the trained model and the scaler
+    print('file path')
+    print(os.path.dirname(__file__))
+    model_path = os.path.join(os.path.dirname(__file__), 'neural_net', 'model', 'feedback_nn_model.pth')
+    input_size = 59  # Set the input size to 58 based on the trained model's input
+
+    model = get_result.load_model(model_path, input_size)
+
+    scaler_path = os.path.join(os.path.dirname(__file__), 'neural_net', 'model', 'scaler.pkl')
+
+    scaler = joblib.load(scaler_path)
+
+    best_feedback, best_ratio_index = 0, 0
+
+    for i in range(len(ratios)):
+        data = data_processing.process_data(categories, demographics, emotions, ratios[i])
+        predicted_feedback = get_result.predict(model, scaler, data)
+        if predicted_feedback > best_feedback:
+            best_feedback, best_ratio_index = predicted_feedback, i
+
+    system_prompt = system_prompts[best_ratio_index]
+
 
     if not user_prompt:
         return jsonify({"error": "No prompt provided"}), 400
@@ -104,59 +157,57 @@ def chat():
 #     db.chats.insert_one(chat_entry)
 #     return jsonify({"message": "Chat data logged successfully!"}), 201
 
-@app.route('/analyze_message', methods=['POST'])
-def analyze_message():
-    # assume request is a JSON dict with user_id and message
-    data = request.json
-    user_id = data['username']
-    message = data['message']
-
-    # for end of the session when we have feedback
-    table_entry = {}
-
-    # query the database collection called users to find user demographics
-    user = db["users"].find_one({"username": user_id})
-
-    age, gender, ethnicity, education, employment = user['age'], user['gender'], user['ethnicity'], user['education'], user['employment']
-
-    demographics = {
-            "age": age,
-            "gender": gender,
-            "ethnicity": ethnicity,
-            "education": education,
-            "employment": employment
-        }
+# @app.route('/analyze_message', methods=['POST'])
+# def analyze_message():
+#     # assume request is a JSON dict with user_id and message
+#     data = request.json
+#     user_id = data['username']
+#     message = data['message']
 
 
-    ratios = [0.25, 0.5, 0.75]
+#     # query the database collection called users to find user demographics
+#     user = db["users"].find_one({"username": user_id})
 
-    # analyze the message to find other paramaters
-    emotions = emotion.identify_emotions(message)
-    categories = category.categorize(message)
+#     age, gender, ethnicity, education, employment = user['age'], user['gender'], user['ethnicity'], user['education'], user['employment']
+
+#     demographics = {
+#             "age": age,
+#             "gender": gender,
+#             "ethnicity": ethnicity,
+#             "education": education,
+#             "employment": employment
+#         }
+
+
+#     ratios = [0.01, 0.25, 0.5, 0.75, 1.0]
+
+#     # analyze the message to find other paramaters
+#     emotions = emotion.identify_emotions(message)
+#     categories = category.categorize(message)
     
-    # TODO: the best ratio, changing variable
-    # Load the trained model and the scaler
-    model_path = 'backend/neural_net/model/feedback_nn_model.pth'
-    input_size = 59  # Set the input size to 58 based on the trained model's input
+#     # TODO: the best ratio, changing variable
+#     # Load the trained model and the scaler
+#     model_path = 'backend/neural_net/model/feedback_nn_model.pth'
+#     input_size = 59  # Set the input size to 58 based on the trained model's input
 
-    model = get_result.load_model(model_path, input_size)
+#     model = get_result.load_model(model_path, input_size)
 
-    scaler_path = 'backend/neural_net/model/scaler.pkl'  # Load the saved scaler
+#     scaler_path = 'backend/neural_net/model/scaler.pkl'  # Load the saved scaler
 
-    scaler = joblib.load(scaler_path)
+#     scaler = joblib.load(scaler_path)
 
-    best_feedback, best_ratio = 0, 0
+#     best_feedback, best_ratio = 0, 0
 
-    for ratio in ratios:
-        data = data_processing.process_data(categories, demographics, emotions, ratio)
-        predicted_feedback = get_result(model, scaler, data)
-        if predicted_feedback > best_feedback:
-            best_feedback, best_ratio = predicted_feedback, ratio
+#     for ratio in ratios:
+#         data = data_processing.process_data(categories, demographics, emotions, ratio)
+#         predicted_feedback = get_result(model, scaler, data)
+#         if predicted_feedback > best_feedback:
+#             best_feedback, best_ratio = predicted_feedback, ratio
 
-    # call the LLM with a prompt incorporating the best ratio
-    ...
+#     # call the LLM with a prompt incorporating the best ratio
+#     ...
 
-    # TODO: return the jsonified LLM response
+#     # TODO: return the jsonified LLM response
     
     
 
