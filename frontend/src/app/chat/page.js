@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -8,7 +8,7 @@ import Bar from './bar';
 import UserInput from './userInput';
 import AIOutput from './aiOutput';
 
-export default function ChatInterface() {
+export default function Chat() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, { useState } from "react";
 import {
   TextField,
   Button,
@@ -16,12 +16,13 @@ import {
   FormControl,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
+import axios from 'axios'; // Import axios
 
 const SignUpPage = () => {
-  const router = useRouter(); 
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     age: "",
@@ -31,8 +32,7 @@ const SignUpPage = () => {
     employment: "",
   });
 
-   // Handle changes in input fields
-   const handleChange = (event) => {
+  const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -40,6 +40,28 @@ const SignUpPage = () => {
   // Function to handle navigation to the login page
   const handleLoginRedirect = () => {
     router.push("/login"); // Navigate to the login page
+  };
+
+  // Function to handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5000/signup", {
+        username: formData.username,
+        password: formData.password,
+        age: formData.age,
+        ethnicity: formData.ethnicity,
+        gender: formData.gender,
+        education: formData.education,
+        employment: formData.employment,
+      });
+
+      // Assuming your Flask backend returns a message in the response
+      console.log(response.data.message);
+      router.push("/chat"); // Redirect after successful signup
+    } catch (error) {
+      console.error("Error during signup:", error.response?.data.message || error.message);
+    }
   };
 
   return (
@@ -59,18 +81,18 @@ const SignUpPage = () => {
         <Typography component="h1" variant="h5">
           Sign Up
         </Typography>
-        <Box component="form" noValidate sx={{ mt: 3 }}>
+        <Box component="form" noValidate sx={{ mt: 3 }} onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                autoComplete="name"
-                name="name"
+                autoComplete="username"
+                name="username"
                 required
                 fullWidth
-                id="name"
-                label="Name"
+                id="username"
+                label="Username"
                 autoFocus
-                value={formData.name}
+                value={formData.username}
                 onChange={handleChange}
               />
             </Grid>
@@ -102,7 +124,7 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
-                Demographic survey (Optional)
+                Demographic survey
               </Typography>
             </Grid>
 
@@ -110,7 +132,7 @@ const SignUpPage = () => {
               <TextField
                 fullWidth
                 name="age"
-                label="Age (Optional)"
+                label="Age"
                 type="number"
                 value={formData.age}
                 onChange={handleChange}
@@ -119,11 +141,11 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="ethnicity-label">Ethnicity (Optional)</InputLabel>
+                <InputLabel id="ethnicity-label">Ethnicity</InputLabel>
                 <Select
                   labelId="ethnicity-label"
                   name="ethnicity"
-                  label="Ethnicity (Optional)"
+                  label="Ethnicity"
                   value={formData.ethnicity}
                   onChange={handleChange}
                 >
@@ -144,11 +166,11 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="gender-label">Gender (Optional)</InputLabel>
+                <InputLabel id="gender-label">Gender</InputLabel>
                 <Select
                   labelId="gender-label"
                   name="gender"
-                  label="Gender (Optional)"
+                  label="Gender"
                   value={formData.gender}
                   onChange={handleChange}
                 >
@@ -167,11 +189,11 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="education-label">Education (Optional)</InputLabel>
+                <InputLabel id="education-label">Education</InputLabel>
                 <Select
                   labelId="education-label"
                   name="education"
-                  label="Education (Optional)"
+                  label="Education"
                   value={formData.education}
                   onChange={handleChange}
                 >
@@ -188,11 +210,11 @@ const SignUpPage = () => {
 
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="employment-label">Employment (Optional)</InputLabel>
+                <InputLabel id="employment-label">Employment</InputLabel>
                 <Select
                   labelId="employment-label"
                   name="employment"
-                  label="Employment (Optional)"
+                  label="Employment"
                   value={formData.employment}
                   onChange={handleChange}
                 >
@@ -223,7 +245,7 @@ const SignUpPage = () => {
                 sx={{ mt: 2 }}
                 onClick={handleLoginRedirect}
               >
-                Already Signed Up? Log In instead
+                Already Signed Up? Log In.
               </Button>
             </Grid>
           </Grid>
