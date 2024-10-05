@@ -47,3 +47,9 @@ MoodIQ is an advanced AI-driven chatbot tool designed to provide personalized co
 - **Database**: 
   - MongoDB (for storing user interaction data)
 - **APIs**: Flask REST API for serving chat data and managing the LLM interaction pipeline
+
+## Running locally
+- To clone the repository, run $`git clone https://github.com/UOFT-DSI-SRI-ResponsibleLLM-Hackathon/Team_4.git`
+- To install dependencies, run `npm install`
+- To run the backend, run $`cd backend`, $`python app.py`
+- To run the frontend, run $`cd frontend`, $`npm run dev`
